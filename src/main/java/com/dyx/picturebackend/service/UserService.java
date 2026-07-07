@@ -1,11 +1,16 @@
 package com.dyx.picturebackend.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.dyx.picturebackend.model.dto.UserQueryRequest;
 import com.dyx.picturebackend.model.eneity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.dyx.picturebackend.model.vo.LoginUserVo;
+import com.dyx.picturebackend.model.vo.UserVO;
 import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.PublicKey;
+import java.util.List;
 
 /**
 * @author 杜雨轩
@@ -40,5 +45,29 @@ public interface UserService extends IService<User> {
      * @return
      */
     User getLoginUser(HttpServletRequest request);
+    /**
+     * 用户注销
+     *
+     * @param request
+     * @return
+     */
+    boolean userLogout(HttpServletRequest request);
+
+
+    /**
+     * 获得脱敏的用户信息
+     * @param user
+     * @return
+     */
+    UserVO getUserVO(User user);
+    /**
+     * 获得脱敏的用户信息
+     * @param user
+     * @return
+     */
+    List<UserVO> getUserVOList(List<User> user);
+
+    public QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
+
 
 }
