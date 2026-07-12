@@ -50,20 +50,21 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
                             PictureUploadRequest pictureUploadRequest,
                             User loginUser){
 
-
+        Long pictureUploadRequestId =null;
         if (pictureUploadRequest!=null){
-            Long pictureUploadRequestId = pictureUploadRequest.getId();
+            pictureUploadRequestId = pictureUploadRequest.getId();
         }
-        boolean exists = this.lambdaQuery().eq(Picture::getId, pictureUploadRequest).exists();
-        if (!exists) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"图片不存在");
+        if (pictureUploadRequestId!=null){
+            boolean exists = this.lambdaQuery().eq(Picture::getId, pictureUploadRequest).exists();
+            if (!exists) {
+                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"图片不存在");
+            }
         }
-
-
         String uploadPathPrefix = String.format("public/%s", loginUser.getId());
 
         UploadPictureResult uploadPictureResult = fileManager.uploadPictureResult(multipartFile, uploadPathPrefix);
         Picture picture = new Picture();
+        picture.setName(uploadPictureResult.getPicName());
         picture.setUrl(uploadPictureResult.getUrl());
         picture.setPicSize(uploadPictureResult.getPicSize());
         picture.setPicWidth(uploadPictureResult.getPicWidth());
