@@ -90,6 +90,29 @@ public class Picture implements Serializable {
 
     @TableField("createTime")
     private Date createTime;
+    /**
+     * 状态：0-待审核; 1-通过; 2-拒绝
+     */
+    @TableField("reviewStatus")
+    private Integer reviewStatus;
+
+    /**
+     * 审核信息
+     */
+    @TableField("reviewMessage")
+    private String reviewMessage;
+
+    /**
+     * 审核人 id
+     */
+    @TableField("reviewerId")
+    private Long reviewerId;
+
+    /**
+     * 审核时间
+     */
+    @TableField("reviewTime")
+    private Date reviewTime;
 
 
     /**
