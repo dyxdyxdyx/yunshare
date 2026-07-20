@@ -4,9 +4,15 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.http.HttpStatus;
+import cn.hutool.http.HttpUtil;
+import cn.hutool.http.Method;
 import com.dyx.picturebackend.config.CosClientConfig;
 import com.dyx.picturebackend.exception.BusinessException;
 import com.dyx.picturebackend.exception.ErrorCode;
+import com.dyx.picturebackend.exception.ThrowUtils;
 import com.dyx.picturebackend.model.dto.UploadPictureResult;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.model.PutObjectResult;
@@ -18,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -25,6 +33,11 @@ import java.util.List;
 
 @Slf4j
 @Service
+/**
+ * 文件服务
+ * @deprecated 已废弃，改为使用 upload 包的模板方法优化
+ */
+@Deprecated
 public class FileManager {
     @Resource
     private CosClientConfig cosClientConfig;

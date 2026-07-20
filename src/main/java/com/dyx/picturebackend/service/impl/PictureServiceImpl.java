@@ -11,6 +11,9 @@ import com.dyx.picturebackend.exception.BusinessException;
 import com.dyx.picturebackend.exception.ErrorCode;
 import com.dyx.picturebackend.exception.ThrowUtils;
 import com.dyx.picturebackend.manger.FileManager;
+import com.dyx.picturebackend.manger.upload.FilePictureUpload;
+import com.dyx.picturebackend.manger.upload.PictureUploadTemplate;
+import com.dyx.picturebackend.manger.upload.UrlPictureUpload;
 import com.dyx.picturebackend.model.dto.PictureQueryRequest;
 import com.dyx.picturebackend.model.dto.PictureReviewRequest;
 import com.dyx.picturebackend.model.dto.PictureUploadRequest;
@@ -28,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
@@ -48,8 +52,15 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 
     @Autowired
     private UserService userService;
+
+    @Resource
+    private FilePictureUpload filePictureUpload;
+
+    @Resource
+    private UrlPictureUpload urlPictureUpload;
+
     @Override
-    public PictureVO uploadPicture(MultipartFile multipartFile,
+    public PictureVO uploadPicture(Object inputSource,
                             PictureUploadRequest pictureUploadRequest,
                             User loginUser){
 
@@ -72,8 +83,13 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 //            }
         }
         String uploadPathPrefix = String.format("public/%s", loginUser.getId());
+        PictureUploadTemplate pictureUploadTemplate = filePictureUpload;
+        if (inputSource instanceof String) {
+            pictureUploadTemplate = urlPictureUpload;
+        }
 
-        UploadPictureResult uploadPictureResult = fileManager.uploadPictureResult(multipartFile, uploadPathPrefix);
+
+        UploadPictureResult uploadPictureResult = pictureUploadTemplate.uploadPicture(inputSource,uploadPathPrefix);
         Picture picture = new Picture();
         picture.setName(uploadPictureResult.getPicName());
         picture.setUrl(uploadPictureResult.getUrl());
