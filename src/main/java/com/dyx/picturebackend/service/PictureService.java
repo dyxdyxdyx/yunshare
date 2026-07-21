@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.dyx.picturebackend.model.dto.PictureQueryRequest;
 import com.dyx.picturebackend.model.dto.PictureReviewRequest;
+import com.dyx.picturebackend.model.dto.PictureUploadByBatchRequest;
 import com.dyx.picturebackend.model.dto.PictureUploadRequest;
 import com.dyx.picturebackend.model.eneity.Picture;
 import com.dyx.picturebackend.model.eneity.User;
@@ -37,5 +38,18 @@ public interface PictureService extends IService<Picture> {
     public void validPicture(Picture picture);
     void doPictureReview(PictureReviewRequest pictureReviewRequest, User loginUser);
     public void fillReviewParams(Picture picture, User loginUser);
+
+
+    /**
+     * 批量抓取和创建图片
+     *
+     * @param pictureUploadByBatchRequest
+     * @param loginUser
+     * @return 成功创建的图片数
+     */
+    Integer uploadPictureByBatch(
+            PictureUploadByBatchRequest pictureUploadByBatchRequest,
+            User loginUser
+    );
 
 }
