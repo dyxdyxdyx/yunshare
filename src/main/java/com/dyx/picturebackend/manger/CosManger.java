@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class CosManger {
@@ -48,23 +50,26 @@ public class CosManger {
         return cosClient.getObject(getObjectRequest);
     }
 
-    public PutObjectResult putPictureObject(String key, File file){
-        PutObjectRequest putObjectRequest = new PutObjectRequest(cosClientConfig.getBucket(), key, file);
-        try {
-            PicOperations picOperations = new PicOperations();
-            picOperations.setIsPicInfo(1);
-            putObjectRequest.setPicOperations(picOperations);
-            PutObjectResult putObjectResult = cosClient.putObject(putObjectRequest);
-
-
-
-            return putObjectResult;
-        } catch (CosServiceException cse) {
-            cse.printStackTrace();
-        } catch (CosClientException cce) {
-            cce.printStackTrace();
-        }
-        return null;
+    public PutObjectResult putPictureObject(String key, File file) {
+        PutObjectRequest putObjectRequest = new PutObjectRequest(cosClientConfig.getBucket(), key,
+                file);
+        // 对图片进行处理（获取基本信息也被视作为一种处理）
+        PicOperations picOperations = new PicOperations();
+        // 1 表示返回原图信息
+        picOperations.setIsPicInfo(1);
+        List<PicOperations.Rule> rules = new ArrayList<>();
+        // 图片压缩（转成 webp 格式）
+        String webpKey = FileUtil.mainName(key) + ".webp";
+        PicOperations.Rule compressRule = new PicOperations.Rule();
+        compressRule.setRule("imageMogr2/format/webp");
+        compressRule.setBucket(cosClientConfig.getBucket());
+        compressRule.setFileId(webpKey);
+        rules.add(compressRule);
+        // 构造处理参数
+        picOperations.setRules(rules);
+        putObjectRequest.setPicOperations(picOperations);
+        return cosClient.putObject(putObjectRequest);
     }
+
 
 }
