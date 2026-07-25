@@ -1,5 +1,6 @@
 package com.dyx.picturebackend.model.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 @Data
@@ -8,8 +9,9 @@ public class UploadPictureResult {
     /**  
      * 图片地址  
      */  
-    private String url;  
-  
+    private String url;
+    @TableField("thumbnailUrl")
+    private String thumbnailUrl;
     /**  
      * 图片名称  
      */  

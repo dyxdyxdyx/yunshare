@@ -1,6 +1,7 @@
 package com.dyx.picturebackend.model.vo;
 
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.dyx.picturebackend.model.eneity.Picture;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -20,13 +21,14 @@ public class PictureVO implements Serializable {
     /**  
      * 图片 url  
      */  
-    private String url;  
-  
+    private String url;
+    @TableField("thumbnailUrl")
+    private String thumbnailUrl;
     /**  
      * 图片名称  
      */  
-    private String name;  
-  
+    private String name;
+    private Long spaceId;
     /**  
      * 简介  
      */  
