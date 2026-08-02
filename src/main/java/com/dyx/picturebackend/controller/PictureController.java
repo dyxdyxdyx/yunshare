@@ -5,6 +5,8 @@ import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dyx.picturebackend.annotation.AuthCheck;
+import com.dyx.picturebackend.api.imagesearch.ImageSearchApiFacade;
+import com.dyx.picturebackend.api.imagesearch.model.ImageSearchResult;
 import com.dyx.picturebackend.common.BaseResponse;
 import com.dyx.picturebackend.common.DeleteRequest;
 import com.dyx.picturebackend.common.ResultUtils;
@@ -226,6 +228,19 @@ public class PictureController {
         return ResultUtils.success(pictureService.getPictureVOPage(picturePage, request));
     }
 
+    /**
+     * 以图搜图
+     */
+    @PostMapping("/search/picture")
+    public BaseResponse<List<ImageSearchResult>> searchPictureByPicture(@RequestBody SearchPictureByPictureRequest searchPictureByPictureRequest) {
+        ThrowUtils.throwif(searchPictureByPictureRequest == null, ErrorCode.PARAMS_ERROR);
+        Long pictureId = searchPictureByPictureRequest.getPictureId();
+        ThrowUtils.throwif(pictureId == null || pictureId <= 0, ErrorCode.PARAMS_ERROR);
+        Picture oldPicture = pictureService.getById(pictureId);
+        ThrowUtils.throwif(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
+        List<ImageSearchResult> resultList = ImageSearchApiFacade.searchImage(oldPicture.getUrl());
+        return ResultUtils.success(resultList);
+    }
 
 
     @PostMapping("/list/page/vo/cache")
