@@ -13,6 +13,7 @@ import com.dyx.picturebackend.model.vo.PictureVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
 * @author 杜雨轩
@@ -30,7 +31,7 @@ public interface PictureService extends IService<Picture> {
     PictureVO uploadPicture(Object inputSource,
                             PictureUploadRequest pictureUploadRequest,
                             User loginUser);
-
+    public List<PictureVO> searchPictureByColor(Long spaceId, String picColor, User loginUser);
     QueryWrapper<Picture> getQueryWrapper(PictureQueryRequest pictureQueryRequest);
     public PictureVO getPictureVO(Picture picture, HttpServletRequest request);
     public Page<PictureVO> getPictureVOPage(Page<Picture> picturePage, HttpServletRequest request);
@@ -53,4 +54,9 @@ public interface PictureService extends IService<Picture> {
     );
     public void editPicture(PictureEditRequest pictureEditRequest, User loginUser);
 
-}
+
+
+    public void editPictureByBatch(PictureEditByBatchRequest pictureEditByBatchRequest, User loginUser);
+
+
+    }

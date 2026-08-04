@@ -16,8 +16,9 @@ public class PictureVO implements Serializable {
     /**  
      * id  
      */  
-    private Long id;  
-  
+    private Long id;
+    @TableField("picColor")
+    private String picColor;
     /**  
      * 图片 url  
      */  

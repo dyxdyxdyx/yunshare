@@ -15,8 +15,9 @@ public class UploadPictureResult {
     /**  
      * 图片名称  
      */  
-    private String picName;  
-  
+    private String picName;
+    @TableField("picColor")
+    private String picColor;
     /**  
      * 文件体积  
      */  
