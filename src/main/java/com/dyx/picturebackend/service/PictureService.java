@@ -4,6 +4,7 @@ package com.dyx.picturebackend.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.dyx.picturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.dyx.picturebackend.exception.BusinessException;
 import com.dyx.picturebackend.exception.ErrorCode;
 import com.dyx.picturebackend.model.dto.*;
@@ -58,5 +59,5 @@ public interface PictureService extends IService<Picture> {
 
     public void editPictureByBatch(PictureEditByBatchRequest pictureEditByBatchRequest, User loginUser);
 
-
+    public CreateOutPaintingTaskResponse createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser);
     }
