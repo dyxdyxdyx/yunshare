@@ -1,5 +1,6 @@
 package com.dyx.picturebackend.model.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -11,7 +12,8 @@ public class SpaceAddRequest implements Serializable {
      * 空间名称
      */
     private String spaceName;
-
+    @TableField("spaceType")
+    private Integer spaceType;
     /**
      * 空间级别：0-普通版 1-专业版 2-旗舰版
      */

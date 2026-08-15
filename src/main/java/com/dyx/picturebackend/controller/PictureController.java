@@ -18,6 +18,11 @@ import com.dyx.picturebackend.constant.UserConstant;
 import com.dyx.picturebackend.exception.BusinessException;
 import com.dyx.picturebackend.exception.ErrorCode;
 import com.dyx.picturebackend.exception.ThrowUtils;
+import com.dyx.picturebackend.manger.StpKit;
+import com.dyx.picturebackend.manger.auth.SpaceUserAuthManager.SpaceUserAuthManager;
+import com.dyx.picturebackend.manger.auth.annotation.SaSpaceCheckPermission;
+import com.dyx.picturebackend.manger.auth.model.SpaceUserPermission;
+import com.dyx.picturebackend.manger.auth.model.SpaceUserPermissionConstant;
 import com.dyx.picturebackend.model.dto.*;
 import com.dyx.picturebackend.model.eneity.Picture;
 import com.dyx.picturebackend.model.eneity.Space;
@@ -60,6 +65,10 @@ public class PictureController {
     private SpaceService spaceService;
 
     @Resource
+    private SpaceUserAuthManager spaceUserAuthManager;
+
+
+    @Resource
     private StringRedisTemplate stringRedisTemplate;
     private final Cache<String, String> LOCAL_CACHE =
             Caffeine.newBuilder().initialCapacity(1024)
@@ -85,6 +94,7 @@ public class PictureController {
      * 删除图片
      */
     @PostMapping("/delete")
+    @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_DELETE)
     public BaseResponse<Boolean> deletePicture(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -160,16 +170,48 @@ public class PictureController {
         // 查询数据库
         Picture picture = pictureService.getById(id);
         ThrowUtils.throwif(picture == null, ErrorCode.NOT_FOUND_ERROR);
-
+        // 空间的图片，需要校验权限
+        Space space = null;
         Long spaceId = picture.getSpaceId();
-        if (spaceId!=null) {
-            User loginUser = userService.getLoginUser(request);
-            pictureService.checkPictureAuth(loginUser,picture);
+        if (spaceId != null) {
+            boolean hasPermission = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
+            ThrowUtils.throwif(!hasPermission, ErrorCode.NO_AUTH_ERROR);
+            space = spaceService.getById(spaceId);
+            ThrowUtils.throwif(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
         }
-
+        // 获取权限列表
+        User loginUser = userService.getLoginUser(request);
+        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
+        PictureVO pictureVO = pictureService.getPictureVO(picture, request);
+        pictureVO.setPermissionList(permissionList);
         // 获取封装类
-        return ResultUtils.success(pictureService.getPictureVO(picture, request));
+        return ResultUtils.success(pictureVO);
     }
+
+
+    @PostMapping("/list/page/vo")
+    public BaseResponse<Page<PictureVO>> listPictureVOByPage(@RequestBody PictureQueryRequest pictureQueryRequest, HttpServletRequest request) {
+        long current = pictureQueryRequest.getCurrent();
+        long size = pictureQueryRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwif(size > 20, ErrorCode.PARAMS_ERROR);
+        // 空间权限校验
+        Long spaceId = pictureQueryRequest.getSpaceId();
+        // 公开图库
+        if (spaceId == null) {
+            // 普通用户默认只能查看已过审的公开数据
+            pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+            pictureQueryRequest.setNullSpaceId(true);
+        } else {
+            boolean hasPermission = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
+            ThrowUtils.throwif(!hasPermission, ErrorCode.NO_AUTH_ERROR);
+        }
+        // 查询数据库
+        Page<Picture> picturePage = pictureService.page(new Page<>(current, size), pictureService.getQueryWrapper(pictureQueryRequest));
+        // 获取封装类
+        return ResultUtils.success(pictureService.getPictureVOPage(picturePage, request));
+    }
+
     /**
      * 分页获取图片列表（仅管理员可用）
      */
@@ -198,41 +240,41 @@ public class PictureController {
         return ResultUtils.success(pictureVO);
     }
 
-    /**
-     * 分页获取图片列表（封装类）
-     */
-    @PostMapping("/list/page/vo")
-    public BaseResponse<Page<PictureVO>> listPictureVOByPage(@RequestBody PictureQueryRequest pictureQueryRequest,
-                                                             HttpServletRequest request) {
-        long current = pictureQueryRequest.getCurrent();
-        long size = pictureQueryRequest.getPageSize();
-        // 限制爬虫
-        ThrowUtils.throwif(size > 20, ErrorCode.PARAMS_ERROR);
-        pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
-
-        // 空间权限校验
-        Long spaceId = pictureQueryRequest.getSpaceId();
-// 公开图库
-        if (spaceId == null) {
-            // 普通用户默认只能查看已过审的公开数据
-            pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
-            pictureQueryRequest.setNullSpaceId(true);
-        } else {
-            // 私有空间
-            User loginUser = userService.getLoginUser(request);
-            Space space = spaceService.getById(spaceId);
-            ThrowUtils.throwif(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
-            if (!loginUser.getId().equals(space.getUserId())) {
-                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "没有空间权限");
-            }
-        }
-
-        // 查询数据库
-        Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
-                pictureService.getQueryWrapper(pictureQueryRequest));
-        // 获取封装类
-        return ResultUtils.success(pictureService.getPictureVOPage(picturePage, request));
-    }
+//    /**
+//     * 分页获取图片列表（封装类）
+//     */
+//    @PostMapping("/list/page/vo")
+//    public BaseResponse<Page<PictureVO>> listPictureVOByPage(@RequestBody PictureQueryRequest pictureQueryRequest,
+//                                                             HttpServletRequest request) {
+//        long current = pictureQueryRequest.getCurrent();
+//        long size = pictureQueryRequest.getPageSize();
+//        // 限制爬虫
+//        ThrowUtils.throwif(size > 20, ErrorCode.PARAMS_ERROR);
+//        pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+//
+//        // 空间权限校验
+//        Long spaceId = pictureQueryRequest.getSpaceId();
+//// 公开图库
+//        if (spaceId == null) {
+//            // 普通用户默认只能查看已过审的公开数据
+//            pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+//            pictureQueryRequest.setNullSpaceId(true);
+//        } else {
+//            // 私有空间
+//            User loginUser = userService.getLoginUser(request);
+//            Space space = spaceService.getById(spaceId);
+//            ThrowUtils.throwif(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
+//            if (!loginUser.getId().equals(space.getUserId())) {
+//                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "没有空间权限");
+//            }
+//        }
+//
+//        // 查询数据库
+//        Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
+//                pictureService.getQueryWrapper(pictureQueryRequest));
+//        // 获取封装类
+//        return ResultUtils.success(pictureService.getPictureVOPage(picturePage, request));
+//    }
 
     /**
      * 以图搜图

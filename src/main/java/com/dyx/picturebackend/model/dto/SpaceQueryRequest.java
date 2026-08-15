@@ -1,5 +1,6 @@
 package com.dyx.picturebackend.model.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.dyx.picturebackend.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,7 +20,8 @@ public class SpaceQueryRequest extends PageRequest implements Serializable {
      * 用户 id
      */
     private Long userId;
-
+    @TableField("spaceType")
+    private Integer spaceType;
     /**
      * 空间名称
      */

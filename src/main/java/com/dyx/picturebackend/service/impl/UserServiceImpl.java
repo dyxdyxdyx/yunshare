@@ -13,6 +13,7 @@ import com.dyx.picturebackend.constant.UserConstant;
 import com.dyx.picturebackend.exception.BusinessException;
 import com.dyx.picturebackend.exception.ErrorCode;
 import com.dyx.picturebackend.exception.ThrowUtils;
+import com.dyx.picturebackend.manger.StpKit;
 import com.dyx.picturebackend.model.dto.UserQueryRequest;
 import com.dyx.picturebackend.model.eneity.User;
 import com.dyx.picturebackend.model.enums.UserRoleEnum;
@@ -102,7 +103,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         //4，保存用户的登录态
         request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE,user);
-        LoginUserVo loginUserVo = new LoginUserVo();
+        StpKit.SPACE.login(user.getId());
+        StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE,user);
+
+
+        LoginUserVo  loginUserVo = new LoginUserVo();
         BeanUtil.copyProperties(user,loginUserVo);
         return loginUserVo;
     }

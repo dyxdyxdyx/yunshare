@@ -11,6 +11,7 @@ import com.dyx.picturebackend.constant.UserConstant;
 import com.dyx.picturebackend.exception.BusinessException;
 import com.dyx.picturebackend.exception.ErrorCode;
 import com.dyx.picturebackend.exception.ThrowUtils;
+import com.dyx.picturebackend.manger.auth.SpaceUserAuthManager.SpaceUserAuthManager;
 import com.dyx.picturebackend.model.dto.*;
 import com.dyx.picturebackend.model.eneity.Picture;
 import com.dyx.picturebackend.model.eneity.Space;
@@ -50,6 +51,8 @@ public class SpaceController {
     private UserService userService;
 
 
+    @Resource
+    private SpaceUserAuthManager spaceUserAuthManager;
 
     @PostMapping("/add")
     public BaseResponse<Long> addSpace(@RequestBody SpaceAddRequest addRequest, HttpServletRequest request) {
@@ -71,6 +74,19 @@ public class SpaceController {
                         spaceLevelEnum.getMaxSize()))
                 .collect(Collectors.toList());
         return ResultUtils.success(spaceLevelList);
+    }
+    @GetMapping("/get/vo")
+    public BaseResponse<SpaceVO> getSpaceVOById(long id, HttpServletRequest request) {
+        ThrowUtils.throwif(id <= 0, ErrorCode.PARAMS_ERROR);
+        // 查询数据库
+        Space space = spaceService.getById(id);
+        ThrowUtils.throwif(space == null, ErrorCode.NOT_FOUND_ERROR);
+        SpaceVO spaceVO = spaceService.getSpaceVO(space, request);
+        User loginUser = userService.getLoginUser(request);
+        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
+        spaceVO.setPermissionList(permissionList);
+        // 获取封装类
+        return ResultUtils.success(spaceVO);
     }
 
 
@@ -133,18 +149,7 @@ public class SpaceController {
         return ResultUtils.success(space);
     }
 
-    /**
-     * 根据 id 获取空间（封装类）
-     */
-    @GetMapping("/get/vo")
-    public BaseResponse<SpaceVO> getSpaceVOById(long id, HttpServletRequest request) {
-        ThrowUtils.throwif(id <= 0, ErrorCode.PARAMS_ERROR);
-        // 查询数据库
-        Space space = spaceService.getById(id);
-        ThrowUtils.throwif(space == null, ErrorCode.NOT_FOUND_ERROR);
-        // 获取封装类
-        return ResultUtils.success(spaceService.getSpaceVO(space, request));
-    }
+
     /**
      * 分页获取空间列表（仅管理员可用）
      */
