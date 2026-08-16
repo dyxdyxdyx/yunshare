@@ -53,7 +53,7 @@ spring:
             type: CLASS_BASED
             props:
               strategy: standard
-              algorithmClassName: com.dyx.picturebackend.manager.sharding.PictureShardingAlgorithm
+              algorithmClassName: com.dyx.picturebackend.manger.sharding.PictureShardingAlgorithm
     props:
       sql-show: true
 
@@ -70,7 +70,7 @@ mybatis-plus:
       logic-delete-field: isDeleted
       logic-delete-value: 1
       logic-not-delete-value: 0
-    enable-sql-runner: true;
+    enable-sql-runner: true
   mapper-locations: classpath:mappers/*xml
   type-aliases-package: com.dyx.picturebackend.mybatis.entity
 knife4j:
